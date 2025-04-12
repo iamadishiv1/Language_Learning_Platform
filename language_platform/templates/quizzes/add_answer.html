@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block title %}Add Answer{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h4>Add Answer to Question</h4>
+            </div>
+            <div class="card-body">
+                <div class="mb-4 p-3 bg-light rounded">
+                    <h5>Question:</h5>
+                    <p>{{ question.text }}</p>
+                </div>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <button type="submit" class="btn btn-primary">Add Answer</button>
+                            <a href="{% url 'quiz_detail' question.quiz.id %}" class="btn btn-secondary">Finish</a>
+                        </div>
+                        <a href="{% url 'add_question' question.quiz.id %}" class="btn btn-outline-primary">
+                            Add Another Question
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

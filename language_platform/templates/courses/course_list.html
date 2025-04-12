@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block title %}All Courses{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">Available Courses</h2>
+
+<div class="row">
+    {% for course in courses %}
+    <div class="col-md-4 mb-4">
+        <div class="card course-card h-100">
+            <div class="card-body">
+                <h5 class="card-title">{{ course.title }}</h5>
+                <h6 class="card-subtitle mb-2 text-muted">{{ course.language }}</h6>
+                <p class="card-text">{{ course.description|truncatewords:20 }}</p>
+                <div class="mb-2">
+                    {% for i in "12345" %}
+                        <i class="bi bi-star{% if forloop.counter <= course.difficulty %}-fill{% endif %} text-warning"></i>
+                    {% endfor %}
+                </div>
+                <span class="badge bg-{% if course.is_active %}success{% else %}secondary{% endif %}">
+                    {% if course.is_active %}Active{% else %}Inactive{% endif %}
+                </span>
+            </div>
+            <div class="card-footer bg-transparent">
+                <a href="{% url 'course_detail' course.id %}" class="btn btn-sm btn-primary">View Course</a>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="alert alert-info">No courses available at the moment.</div>
+    </div>
+    {% endfor %}
+</div>
+
+{% if user.is_superuser %}
+<div class="mt-4">
+    <a href="{% url 'create_course' %}" class="btn btn-success">Create New Course</a>
+</div>
+{% endif %}
+{% endblock %}

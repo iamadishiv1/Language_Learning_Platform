@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ lesson.title }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-body">
+                <h2>{{ lesson.title }}</h2>
+                <p class="text-muted">Lesson {{ lesson.order }} in {{ lesson.course.title }}</p>
+                <div class="lesson-content">
+                    {{ lesson.content|linebreaks }}
+                </div>
+                
+                {% if user.is_authenticated %}
+                    <form method="post" class="mt-4">
+                        {% csrf_token %}
+                        {% if user_progress and lesson in user_progress.completed_lessons.all %}
+                            <button type="submit" name="complete_lesson" class="btn btn-success" disabled>
+                                <i class="bi bi-check-circle"></i> Completed
+                            </button>
+                        {% else %}
+                            <button type="submit" name="complete_lesson" class="btn btn-primary">
+                                Mark as Completed
+                            </button>
+                        {% endif %}
+                    </form>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5>Lesson Activities</h5>
+            </div>
+            <div class="card-body">
+                <div class="list-group">
+                    {% for exercise in exercises %}
+                        <a href="{% url 'exercise_detail' exercise.id %}" class="list-group-item list-group-item-action">
+                            <i class="bi bi-pencil-square"></i> {{ exercise.title }}
+                        </a>
+                    {% endfor %}
+                    
+                    {% for quiz in quizzes %}
+                        <a href="{% url 'quiz_detail' quiz.id %}" class="list-group-item list-group-item-action">
+                            <i class="bi bi-question-square"></i> {{ quiz.title }}
+                        </a>
+                    {% endfor %}
+                </div>
+                
+                {% if user.is_superuser %}
+                    <div class="mt-3">
+                        <a href="{% url 'create_exercise' lesson.id %}" class="btn btn-sm btn-outline-primary">
+                            Add Exercise
+                        </a>
+                        <a href="{% url 'create_quiz' lesson.id %}" class="btn btn-sm btn-outline-primary">
+                            Add Quiz
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

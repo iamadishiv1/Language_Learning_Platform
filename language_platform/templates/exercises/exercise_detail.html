@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ exercise.title }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-body">
+                <h2>{{ exercise.title }}</h2>
+                <p class="text-muted">Exercise for {{ exercise.lesson.title }}</p>
+                <div class="exercise-question mb-4 p-3 bg-light rounded">
+                    <h5>Question:</h5>
+                    <p>{{ exercise.question|linebreaks }}</p>
+                </div>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="answer" class="form-label">Your Answer:</label>
+                        <textarea class="form-control" id="answer" name="answer" rows="3" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Submit Answer</button>
+                </form>
+                
+                {% if user_attempts %}
+                    <div class="mt-4">
+                        <h5>Your Previous Attempts:</h5>
+                        <div class="list-group">
+                            {% for attempt in user_attempts %}
+                                <div class="list-group-item {% if attempt.is_correct %}list-group-item-success{% else %}list-group-item-danger{% endif %}">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <p class="mb-1">{{ attempt.attempt }}</p>
+                                        <small>{{ attempt.timestamp|timesince }} ago</small>
+                                    </div>
+                                    <small class="text-muted">{{ attempt.feedback }}</small>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        {% if user.is_superuser %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>Exercise Management</h5>
+                </div>
+                <div class="card-body">
+                    <a href="{% url 'edit_exercise' exercise.id %}" class="btn btn-outline-secondary btn-sm">Edit Exercise</a>
+                    <a href="{% url 'delete_exercise' exercise.id %}" class="btn btn-outline-danger btn-sm">Delete Exercise</a>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

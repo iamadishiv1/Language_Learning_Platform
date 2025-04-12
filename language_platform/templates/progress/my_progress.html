@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+
+{% block title %}My Progress{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h4>My Learning Progress</h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card text-white bg-primary mb-3">
+                            <div class="card-body">
+                                <h5 class="card-title">Courses Completed</h5>
+                                <p class="card-text display-4">{{ courses_completed }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card text-white bg-success mb-3">
+                            <div class="card-body">
+                                <h5 class="card-title">Average Quiz Score</h5>
+                                <p class="card-text display-4">{{ avg_quiz_score|floatformat }}%</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <h5 class="mt-4">My Courses</h5>
+                <div class="list-group">
+                    {% for progress in user_progress %}
+                        <a href="{% url 'course_detail' progress.course.id %}" class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6>{{ progress.course.title }}</h6>
+                                <small>{{ progress.last_accessed|timesince }} ago</small>
+                            </div>
+                            <div class="progress mt-2">
+                                {% with completed=progress.completed_lessons.count total=progress.course.lesson_set.count %}
+                                    <div class="progress-bar" role="progressbar" 
+                                        style="width: {% widthratio completed total 100 %}%" 
+                                         aria-valuenow="{{ completed }}" 
+                                         aria-valuemin="0" 
+                                         aria-valuemax="{{ total }}">
+                                        {{ completed }}/{{ total }} lessons
+                                    </div>
+                                {% endwith %}
+                            </div>
+                        </a>
+                    {% empty %}
+                        <div class="alert alert-info">
+                            You haven't started any courses yet. <a href="{% url 'course_list' %}">Browse courses</a> to get started.
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5>Recent Activity</h5>
+            </div>
+            <div class="card-body">
+                {% if exercise_attempts or quiz_attempts %}
+                    <div class="list-group">
+                        {% for attempt in exercise_attempts|slice:":3" %}
+                            <div class="list-group-item {% if attempt.is_correct %}list-group-item-success{% else %}list-group-item-danger{% endif %}">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <small>Exercise: {{ attempt.exercise.title }}</small>
+                                    <small>{{ attempt.timestamp|timesince }} ago</small>
+                                </div>
+                            </div>
+                        {% endfor %}
+                        
+                        {% for attempt in quiz_attempts|slice:":3" %}
+                            <div class="list-group-item {% if attempt.score >= 70 %}list-group-item-success{% elif attempt.score >= 50 %}list-group-item-warning{% else %}list-group-item-danger{% endif %}">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <small>Quiz: {{ attempt.quiz.title }}</small>
+                                    <small>{{ attempt.score|floatformat }}%</small>
+                                </div>
+                                <small class="text-muted">{{ attempt.completed_at|timesince }} ago</small>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <a href="#" class="btn btn-sm btn-outline-primary mt-3">View All Activity</a>
+                {% else %}
+                    <p class="text-muted">No recent activity to show.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

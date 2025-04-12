@@ -1,0 +1,158 @@
+{% extends 'base.html' %}
+
+{% block title %}My Profile{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-4">
+        <!-- Profile Card (unchanged) -->
+        <div class="card mb-4">
+            <div class="card-body text-center">
+                {% if user.profile.profile_picture %}
+                <img src="{{ user.profile.profile_picture.url }}" alt="Profile Picture" class="rounded-circle mb-3"
+                    width="150" height="150">
+                {% else %}
+                <div class="bg-secondary rounded-circle d-flex align-items-center justify-content-center mb-3"
+                    style="width: 150px; height: 150px;">
+                    <span class="text-white display-4">{{ user.username|first|upper }}</span>
+                </div>
+                {% endif %}
+                <h5 class="card-title">{{ user.username }}</h5>
+                <p class="card-text text-muted">{{ user.email }}</p>
+                <a href="{% url 'edit_profile' %}" class="btn btn-outline-primary">Edit Profile</a>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5>About Me</h5>
+            </div>
+            <div class="card-body">
+                {% if user.profile.bio %}
+                <p>{{ user.profile.bio }}</p>
+                {% else %}
+                <p class="text-muted">No bio yet.</p>
+                {% endif %}
+
+                {% if user.profile.languages_of_interest %}
+                <h6>Languages of Interest</h6>
+                <p>{{ user.profile.languages_of_interest }}</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-8">
+        {% if not user.is_superuser %}
+        <!-- Feedback Section -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5>Instructor Feedback</h5>
+            </div>
+            <div class="card-body">
+                {% if progress_records %}
+                <div class="accordion" id="feedbackAccordion">
+                    {% for record in progress_records %}
+                    {% if record.admin_feedback %}
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="heading{{ forloop.counter }}">
+                            <button class="accordion-button {% if not forloop.first %}collapsed{% endif %}"
+                                type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ forloop.counter }}"
+                                aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}"
+                                aria-controls="collapse{{ forloop.counter }}">
+                                {{ record.course.title }} - Feedback
+                                <span class="badge bg-success ms-2">
+                                    {{ record.feedback_date|date:"M d, Y" }}
+                                </span>
+                            </button>
+                        </h2>
+                        <div id="collapse{{ forloop.counter }}"
+                            class="accordion-collapse collapse {% if forloop.first %}show{% endif %}"
+                            aria-labelledby="heading{{ forloop.counter }}" data-bs-parent="#feedbackAccordion">
+                            <div class="accordion-body">
+                                <div class="d-flex justify-content-between mb-3">
+                                    <div class="progress flex-grow-1 me-3" style="height: 20px;">
+                                        {% with completed=record.completed_lessons.count total=record.course.lesson_set.count %}
+                                        <div class="progress-bar bg-info" role="progressbar"
+                                            style="width: {% widthratio completed total 100 %}%"
+                                            aria-valuenow="{{ completed }}" 
+                                            aria-valuemin="0"
+                                            aria-valuemax="{{ total }}">
+                                            {{ completed }}/{{ total }} lessons
+                                        </div>
+                                        {% endwith %}
+                                    </div>
+                                    <span class="badge bg-primary">
+                                        {{ record.last_accessed|timesince }} ago
+                                    </span>
+                                </div>
+                                <div class="feedback-content p-3 bg-light rounded">
+                                    <h6>Instructor's Comments:</h6>
+                                    <p class="mb-0">{{ record.admin_feedback }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="alert alert-info">
+                    You haven't received any feedback yet. Keep working on your courses!
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Courses Section -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5>{% if user.is_superuser %}All Courses{% else %}My Courses{% endif %}</h5>
+            </div>
+            <div class="card-body">
+                {% if progress_records %}
+                <div class="list-group">
+                    {% for record in progress_records %}
+                    <a href="{% url 'course_detail' record.course.id %}" class="list-group-item list-group-item-action">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">{{ record.course.title }}</h6>
+                            <small class="text-muted">{{ record.last_accessed|timesince }} ago</small>
+                        </div>
+                        {% if not user.is_superuser %}
+                        <div class="progress mt-2">
+                            {% with completed=record.completed_lessons.count total=record.course.lesson_set.count %}
+                            <div class="progress-bar" role="progressbar"
+                                style="width: {% widthratio completed total 100 %}%" aria-valuenow="{{ completed }}"
+                                aria-valuemin="0" aria-valuemax="{{ total }}">
+                                {{ completed }}/{{ total }} lessons
+                            </div>
+                            {% endwith %}
+                        </div>
+                        {% if record.admin_feedback %}
+                        <div class="mt-2">
+                            <small class="text-success">
+                                <i class="bi bi-chat-left-text"></i>
+                                Instructor feedback available
+                            </small>
+                        </div>
+                        {% endif %}
+                        {% endif %}
+                    </a>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-muted">
+                    {% if user.is_superuser %}
+                    No course progress records found.
+                    {% else %}
+                    You haven't started any courses yet.
+                    {% endif %}
+                </p>
+                <a href="{% url 'course_list' %}" class="btn btn-primary">Browse Courses</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

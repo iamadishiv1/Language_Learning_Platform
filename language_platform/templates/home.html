@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<div class="jumbotron jumbotron-fluid bg-light p-5 rounded mb-4">
+    <div class="container">
+        <h1 class="display-4">Welcome to Language Learning</h1>
+        <p class="lead">Master new languages with interactive courses and exercises.</p>
+        {% if not user.is_authenticated %}
+            <a href="{% url 'signup' %}" class="btn btn-primary btn-lg">Get Started</a>
+        {% endif %}
+    </div>
+</div>
+
+<h2 class="mb-4">Featured Courses</h2>
+<div class="row">
+    {% for course in courses %}
+    <div class="col-md-3 mb-4">
+        <div class="card course-card h-100">
+            <div class="card-body">
+                <h5 class="card-title">{{ course.title }}</h5>
+                <p class="card-text">{{ course.description|truncatewords:15 }}</p>
+                <span class="badge bg-info">Level: {{ course.difficulty }}/5</span>
+            </div>
+            <div class="card-footer bg-transparent">
+                <a href="{% url 'course_detail' course.id %}" class="btn btn-sm btn-primary">View Course</a>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="alert alert-info">No courses available yet.</div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
